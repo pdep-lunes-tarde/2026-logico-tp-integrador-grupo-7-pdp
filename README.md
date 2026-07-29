@@ -2,7 +2,12 @@
 
 ## Integrantes
 
-**Equipo:** 
+**Equipo: Grupo-7-pdp**
+
+- Lucio Giuggioloni
+- Florencia Ayelen Gerez
+- Emiliano Osuna
+- Aaron Villalba
 
 ## Fecha de entrega de parte 1
 
