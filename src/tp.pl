@@ -54,6 +54,19 @@ conmemoracion(weise, destruir_rey_demonio, [frieren, himmel, heiter, eisen], end
 conmemoracion(auberst, destruir_rey_demonio, [frieren, himmel, heiter, eisen], ende, estatua(bronce, equipo_de_heroes, 1370, [1400, 1450])).
 conmemoracion(auberst, destruir_schlat, [heroe_del_sur], ende, estatua(marmol, heroe_del_sur, 1340, [1410])).
 
+recuerda_segun_medio(presencio, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido.
+recuerda_segun_medio(escucho_cancion, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< 15.
+recuerda_segun_medio(leyo_libro(Paginas), AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< Paginas.
+
+recuerda(Persona, Hazania, AnioConsulta) :-
+    recuerdo_original(Persona, AnioConocido, Hazania, _, _, Medio),
+    esta_vivo_en(Persona, AnioConsulta),
+    recuerda_segun_medio(Medio, AnioConocido, AnioConsulta).
+
+paso_al_olvido(Hazania, AnioConsulta) :-
+    version_hazania(Hazania, _, _),
+    \+ recuerda(_, Hazania, AnioConsulta).
+
 % ------------------------------------------
 % Hazañas corroboradas 
 % ------------------------------------------
@@ -91,5 +104,38 @@ multiples_versiones(Hazania) :-
 
 
 :- begin_tests(tpIntegrador, []).
+
+test("una persona no recuerda una hazania si aun no se entero de ella"):-
+    not(recuerda(lawine, destruir_aura, 1380)).
+
+test("una persona recuerda una hazania mientras no venza el plazo segun el medio por el que se entero", nondet):-
+    recuerda(lawine, destruir_aura, 1400).
+
+test("una persona deja de recordar una hazania conocida por una cancion pasados mas de 15 anios"):-
+    not(recuerda(lawine, destruir_aura, 1410)).
+
+test("una persona recuerda una hazania conocida por un libro mientras no pasen mas anios que paginas tenga", nondet):-
+    recuerda(voll, destruir_aura, 1450).
+
+test("una persona deja de recordar una hazania conocida por un libro pasados mas anios que paginas tenga"):-
+    not(recuerda(voll, destruir_aura, 1460)).
+
+test("una persona que presencio una hazania la recuerda mientras siga viva", nondet):-
+    recuerda(wirbel, rescatar_hermana_wirbel, 1430).
+
+test("una persona deja de recordar una hazania si ya no esta viva en ese anio"):-
+    not(recuerda(wirbel, rescatar_hermana_wirbel, 1440)).
+
+test("una hazania esta corroborada si todas sus versiones coinciden en heroes y lugar", nondet):-
+    corroborada(rescatar_hermana_wirbel).
+
+test("una hazania no esta corroborada si sus versiones difieren en heroes o en lugar"):-
+    not(corroborada(destruir_aura)).
+
+test("una hazania paso al olvido en un anio si nadie la recuerda en ese anio", nondet):-
+    paso_al_olvido(destruir_aura, 1460).
+
+test("una hazania no paso al olvido si alguien todavia la recuerda en ese anio"):-
+    not(paso_al_olvido(destruir_aura, 1440)).
 
 :- end_tests(tpIntegrador).
