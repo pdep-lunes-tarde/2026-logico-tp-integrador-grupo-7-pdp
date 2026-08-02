@@ -31,7 +31,7 @@ esta_vivo_en(Persona, AnioConsulta) :-
 % pattern matching por raza
 aun_no_murio(_, elfo, _). % Los elfos viven indefinidamente como dice en el enunciado
 aun_no_murio(Nacimiento, Raza, AnioConsulta) :-
-    Raza \= elfo,
+    Raza \= elfo, 
     esperanza_vida(Raza, VidaMax),
     AnioConsulta - Nacimiento =< VidaMax.
 
@@ -57,6 +57,33 @@ conmemoracion(auberst, destruir_schlat, [heroe_del_sur], ende, estatua(marmol, h
 recuerda_segun_medio(presencio, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido.
 recuerda_segun_medio(escucho_cancion, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< 15.
 recuerda_segun_medio(leyo_libro(Paginas), AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< Paginas.
+
+% Agrega a recuerda_segun_medio los valores para el punto 3b
+recuerda_segun_medio(estatua(marmol,_,AnioCreado,Mantenimientos), AnioConocido, AnioConsulta) :- 
+    AnioConsulta >= AnioConocido,
+    member(Anio, [AnioCreado|Mantenimientos]),
+    AnioConsulta >= Anio,
+    AnioConsulta - Anio =< 30.
+recuerda_segun_medio(estatua(bronce, _, AnioCreado, Mantenimientos), AnioConocido, AnioConsulta) :-
+    AnioConsulta >= AnioConocido,
+    member(Anio, [AnioCreado|Mantenimientos]),
+    AnioConsulta >= Anio,
+    AnioConsulta - Anio =< 15.
+recuerda_segun_medio(dia_festivo(AnioFestejo), AnioConocido, AnioConsulta) :-
+    AnioConsulta >= AnioConocido,
+    AnioConsulta >= AnioFestejo.
+
+% Auxiliar usado para obtener el año de comienzo y lo uso para extraer el añ{o} del medio
+anio_comienzo_conmemoracion(dia_festivo(AnioComienzo), AnioComienzo).
+anio_comienzo_conmemoracion(estatua(_, _, AnioCreado, _), AnioCreado).
+
+recuerda(Persona, Hazania, AnioConsulta) :-
+    habitante(Persona, Pueblo, AnioNacimiento, _),
+    conmemoracion(Pueblo, Hazania, _, _, Medio),
+    esta_vivo_en(Persona, AnioConsulta),
+    anio_comienzo_conmemoracion(Medio, AnioComienzo),
+    AnioConocido is max(AnioNacimiento, AnioComienzo), %Consulta si es ok esto o preferible usar la lógica de la aritmética y hacer un mayor a mano
+    recuerda_segun_medio(Medio, AnioConocido, AnioConsulta).
 
 recuerda(Persona, Hazania, AnioConsulta) :-
     recuerdo_original(Persona, AnioConocido, Hazania, _, _, Medio),
@@ -137,5 +164,13 @@ test("una hazania paso al olvido en un anio si nadie la recuerda en ese anio", n
 
 test("una hazania no paso al olvido si alguien todavia la recuerda en ese anio"):-
     not(paso_al_olvido(destruir_aura, 1440)).
+
+test("se recuerda una hazania si hay una estatua en buen estado en el pueblo donde alguien vive", nondet):-
+    (recuerda(lawine, destruir_rey_demonio, 1400)).
+test("no se recuerda una hazania si la estatua que lo conmemora esta en mal estado"):-
+    (\+ recuerda(lawine, destruir_rey_demonio, 1390)).
+test("se recuerda una hazania si hay un festival conmemorandolo que ya comenzo", nondet):-
+    (recuerda(fern, destruir_rey_demonio, 1400)).
+
 
 :- end_tests(tpIntegrador).
