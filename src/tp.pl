@@ -1,7 +1,4 @@
-% ==========================================
 % PUNTO 1: LA GENTE
-% ==========================================
-
 
 % a) modelar las personas
 
@@ -36,10 +33,8 @@ aun_no_murio(Nacimiento, Raza, AnioConsulta) :-
     AnioConsulta - Nacimiento =< VidaMax.
 
 
-% ==========================================
 % PUNTO 2 y 3: LOS RECUERDOS Y CONMEMORACIONES
-% (Agrupados porque las conmemoraciones estan ligadas con los recuerdos)
-% ==========================================
+% ( las conmemoraciones estan ligadas con los recuerdos)
 
 % recuerdo_original(Persona, Anio, Hazania, Heroes, Lugar, Medio).
 recuerdo_original(wirbel, 1390, rescatar_hermana_wirbel, [stark, fern], klares, presencio).
@@ -94,10 +89,8 @@ paso_al_olvido(Hazania, AnioConsulta) :-
     version_hazania(Hazania, _, _),
     \+ recuerda(_, Hazania, AnioConsulta).
 
-% ------------------------------------------
-% Hazañas corroboradas 
-% ------------------------------------------
 
+% Hazañas corroboradas 
 % Para tener el universo de hazañas (las contadas o las conmemoradas)
 version_hazania(Hazania, Heroes, Lugar) :-
     recuerdo_original(_, _, Hazania, Heroes, Lugar, _).
@@ -117,21 +110,9 @@ multiples_versiones(Hazania) :-
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 :- begin_tests(tpIntegrador, []).
 
+% Tests PUNTO 1
 test("Kanne es una humana nacida en 1365 y deberia estar viva en 1370"):-
     esta_vivo_en(kanne, 1370).
 
@@ -150,6 +131,7 @@ test("Voll ya no esta vivo en 1551, debido a que los enanos no viven mas de 350 
 test("Serie esta viva en el año 5000 porque los elfos no mueren de viejos", nondet):-
     esta_vivo_en(serie, 5000).
 
+% Tests PUNTO 2
 test("una persona no recuerda una hazania si aun no se entero de ella"):-
     not(recuerda(lawine, destruir_aura, 1380)).
 
@@ -183,12 +165,14 @@ test("una hazania paso al olvido en un anio si nadie la recuerda en ese anio", n
 test("una hazania no paso al olvido si alguien todavia la recuerda en ese anio"):-
     not(paso_al_olvido(destruir_aura, 1440)).
 
+% Tests PUNTO 3
 test("se recuerda una hazania si hay una estatua en buen estado en el pueblo donde alguien vive", nondet):-
     (recuerda(lawine, destruir_rey_demonio, 1400)).
+
 test("no se recuerda una hazania si la estatua que lo conmemora esta en mal estado"):-
     (\+ recuerda(lawine, destruir_rey_demonio, 1390)).
+
 test("se recuerda una hazania si hay un festival conmemorandolo que ya comenzo", nondet):-
     (recuerda(fern, destruir_rey_demonio, 1400)).
-
 
 :- end_tests(tpIntegrador).
