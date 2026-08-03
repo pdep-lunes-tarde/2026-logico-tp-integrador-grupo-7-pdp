@@ -138,10 +138,10 @@ test("Kanne es una humana nacida en 1365 y deberia estar viva en 1370"):-
 test("Kanne no esta viva en 1300, ya que todavia no habia nacido"):-
     not(esta_vivo_en(kanne, 1300)).
 
-test("Kanne no esta vova en 2000, porque ya habria muerto"):-
+test("Kanne no esta viva en 2000, porque ya habria muerto debido a superar su esperanza de vida"):-
     not(esta_vivo_en(kanne, 2000)).
 
-test("Voll esta vivoen 1550 ya que nacio en 1200 y por ser enano vive 350 años"):-
+test("Voll esta vivo en el año 1550 ya que nacio en 1200 y por ser enano vive 350 años"):-
     esta_vivo_en(voll, 1550).
 
 test("Voll ya no esta vivo en 1551, debido a que los enanos no viven mas de 350 años"):-
