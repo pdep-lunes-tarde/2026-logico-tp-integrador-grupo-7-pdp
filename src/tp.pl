@@ -132,6 +132,24 @@ multiples_versiones(Hazania) :-
 
 :- begin_tests(tpIntegrador, []).
 
+test("Kanne es una humana nacida en 1365 y deberia estar viva en 1370"):-
+    esta_vivo_en(kanne, 1370).
+
+test("Kanne no esta viva en 1300, ya que todavia no habia nacido"):-
+    not(esta_vivo_en(kanne, 1300)).
+
+test("Kanne no esta vova en 2000, porque ya habria muerto"):-
+    not(esta_vivo_en(kanne, 2000)).
+
+test("Voll esta vivoen 1550 ya que nacio en 1200 y por ser enano vive 350 años"):-
+    esta_vivo_en(voll, 1550).
+
+test("Voll ya no esta vivo en 1551, debido a que los enanos no viven mas de 350 años"):-
+    not(esta_vivo_en(voll, 1551)).
+
+test("Serie esta viva en el año 5000 porque los elfos no mueren de viejos", nondet):-
+    esta_vivo_en(serie, 5000).
+
 test("una persona no recuerda una hazania si aun no se entero de ella"):-
     not(recuerda(lawine, destruir_aura, 1380)).
 
