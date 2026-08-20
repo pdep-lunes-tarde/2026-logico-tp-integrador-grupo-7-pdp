@@ -21,16 +21,16 @@ esperanza_vida(enano, 350).
 
 % b) Una persona esta viva
 esta_vivo_en(Persona, AnioConsulta) :-
-    habitante(Persona, _, Nacimiento, Raza),
+    habitante(Persona, _, Nacimiento, _),
     Nacimiento =< AnioConsulta,
-    aun_no_murio(Nacimiento, Raza, AnioConsulta).
+    not(murio(Persona, AnioConsulta)).
 
-% pattern matching por raza
-aun_no_murio(_, elfo, _). % Los elfos viven indefinidamente como dice en el enunciado
-aun_no_murio(Nacimiento, Raza, AnioConsulta) :-
-    Raza \= elfo, 
+% Si la raza no tiene esperanza_vida (como el elfo), esto falla (false).
+% Y como falla, el not(murio(...)) de arriba da TRUE.
+murio(Persona, AnioConsulta) :-
+    habitante(Persona, _, Nacimiento, Raza),
     esperanza_vida(Raza, VidaMax),
-    AnioConsulta - Nacimiento =< VidaMax.
+    AnioConsulta - Nacimiento > VidaMax.
 
 
 % PUNTO 2 y 3: LOS RECUERDOS Y CONMEMORACIONES
@@ -44,45 +44,53 @@ recuerdo_original(voll, 1400, destruir_aura, [denken], auberst, leyo_libro(50)).
 recuerdo_original(serie, 1335, destruir_rey_demonio, [frieren, himmel, heiter, eisen], ende, leyo_libro(100)).
 recuerdo_original(kanne, 1375, recuperar_gato_perdido, [himmel, frieren], weise, presencio).
 
+% estatuas
+duracion(marmol,30).
+duracion(bronce,15).
+
 % conmemoracion(Pueblo, Hazania, Heroes, Lugar, Medio).
 conmemoracion(weise, destruir_rey_demonio, [frieren, himmel, heiter, eisen], ende, dia_festivo(1340)).
 conmemoracion(auberst, destruir_rey_demonio, [frieren, himmel, heiter, eisen], ende, estatua(bronce, equipo_de_heroes, 1370, [1400, 1450])).
 conmemoracion(auberst, destruir_schlat, [heroe_del_sur], ende, estatua(marmol, heroe_del_sur, 1340, [1410])).
 
-recuerda_segun_medio(presencio, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido.
-recuerda_segun_medio(escucho_cancion, AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< 15.
-recuerda_segun_medio(leyo_libro(Paginas), AnioConocido, AnioConsulta) :- AnioConsulta >= AnioConocido, AnioConsulta - AnioConocido =< Paginas.
+recuerda_segun_medio(presencio, _, _).
+recuerda_segun_medio(dia_festivo(_), _, _).
+
+recuerda_segun_medio(escucho_cancion, AnioConocido, AnioConsulta) :- 
+    AnioConsulta - AnioConocido =< 15.
+
+recuerda_segun_medio(leyo_libro(Paginas), AnioConocido, AnioConsulta) :- 
+    AnioConsulta - AnioConocido =< Paginas.
 
 % Agrega a recuerda_segun_medio los valores para el punto 3b
-recuerda_segun_medio(estatua(marmol,_,AnioCreado,Mantenimientos), AnioConocido, AnioConsulta) :- 
-    AnioConsulta >= AnioConocido,
+recuerda_segun_medio(estatua(Material, _, AnioCreado, Mantenimientos), _, AnioConsulta) :-
+    duracion(Material, VidaUtil),
     member(Anio, [AnioCreado|Mantenimientos]),
     AnioConsulta >= Anio,
-    AnioConsulta - Anio =< 30.
-recuerda_segun_medio(estatua(bronce, _, AnioCreado, Mantenimientos), AnioConocido, AnioConsulta) :-
-    AnioConsulta >= AnioConocido,
-    member(Anio, [AnioCreado|Mantenimientos]),
-    AnioConsulta >= Anio,
-    AnioConsulta - Anio =< 15.
-recuerda_segun_medio(dia_festivo(AnioFestejo), AnioConocido, AnioConsulta) :-
-    AnioConsulta >= AnioConocido,
-    AnioConsulta >= AnioFestejo.
+    AnioConsulta - Anio =< VidaUtil.
 
 % Auxiliar usado para obtener el año de comienzo y lo uso para extraer el añ{o} del medio
 anio_comienzo_conmemoracion(dia_festivo(AnioComienzo), AnioComienzo).
 anio_comienzo_conmemoracion(estatua(_, _, AnioCreado, _), AnioCreado).
 
-recuerda(Persona, Hazania, AnioConsulta) :-
+
+
+% Caso 1: La conoce porque tiene un recuerdo original
+conoce_hazania(Persona, Hazania, AnioConocido, Medio) :-
+    recuerdo_original(Persona, AnioConocido, Hazania, _, _, Medio).
+
+% Caso 2: La conoce porque su pueblo la conmemora
+conoce_hazania(Persona, Hazania, AnioConocido, Medio) :-
     habitante(Persona, Pueblo, AnioNacimiento, _),
     conmemoracion(Pueblo, Hazania, _, _, Medio),
-    esta_vivo_en(Persona, AnioConsulta),
     anio_comienzo_conmemoracion(Medio, AnioComienzo),
-    AnioConocido is max(AnioNacimiento, AnioComienzo), %Consulta si es ok esto o preferible usar la lógica de la aritmética y hacer un mayor a mano
-    recuerda_segun_medio(Medio, AnioConocido, AnioConsulta).
+    AnioConocido is max(AnioNacimiento, AnioComienzo).
+
 
 recuerda(Persona, Hazania, AnioConsulta) :-
-    recuerdo_original(Persona, AnioConocido, Hazania, _, _, Medio),
     esta_vivo_en(Persona, AnioConsulta),
+    conoce_hazania(Persona, Hazania, AnioConocido, Medio),
+    AnioConsulta >= AnioConocido,
     recuerda_segun_medio(Medio, AnioConocido, AnioConsulta).
 
 paso_al_olvido(Hazania, AnioConsulta) :-
@@ -113,22 +121,22 @@ multiples_versiones(Hazania) :-
 :- begin_tests(tpIntegrador, []).
 
 % Tests PUNTO 1
-test("Kanne es una humana nacida en 1365 y deberia estar viva en 1370"):-
+test(" un Humano esta vivo si el anio consultado es mayor o igual a su nacimiento y menor a su esperanza de vida"):-
     esta_vivo_en(kanne, 1370).
 
-test("Kanne no esta viva en 1300, ya que todavia no habia nacido"):-
+test("Una persona no esta viva en un anio anterior a su nacimiento"):-
     not(esta_vivo_en(kanne, 1300)).
 
-test("Kanne no esta viva en 2000, porque ya habria muerto debido a superar su esperanza de vida"):-
+test("Un humano fallece al superar su esperanza de vida maxima"):-
     not(esta_vivo_en(kanne, 2000)).
 
-test("Voll esta vivo en el año 1550 ya que nacio en 1200 y por ser enano vive 350 años"):-
+test("Un enano esta vivo si el anio consultado no supera sus 350 anios de esperanza de vida"):-
     esta_vivo_en(voll, 1550).
 
-test("Voll ya no esta vivo en 1551, debido a que los enanos no viven mas de 350 años"):-
+test("Un enano no esta vivo si su edad supera los 350 anios"):-
     not(esta_vivo_en(voll, 1551)).
 
-test("Serie esta viva en el año 5000 porque los elfos no mueren de viejos", nondet):-
+test("un Elfo siempre esta vivo luego de su nacimiento ya que es inmortal", nondet):-
     esta_vivo_en(serie, 5000).
 
 % Tests PUNTO 2
