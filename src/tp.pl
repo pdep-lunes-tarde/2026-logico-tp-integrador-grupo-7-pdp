@@ -114,6 +114,59 @@ multiples_versiones(Hazania) :-
     version_hazania(Hazania, Heroes2, Lugar2),
     (Heroes1 \= Heroes2 ; Lugar1 \= Lugar2).
 
+% Parte 2
+
+todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe):-
+    findall(Hazania,(habitante(Persona,Pueblo,_,_),recuerda(Persona, Hazania, AnioConsulta)),Hazanias),
+    list_to_set(Hazanias,HazaniasSinRepe).
+
+recuerdaHazaniaXmedio(Persona,Hazania,Medio,AnioConsulta):-
+    conoceHazania(Persona,Hazania,AnioConocido,Medio),
+    estaVivoEn(Persona,AnioConsulta),
+    AnioConsulta>=AnioConocido,
+    recuerda_segun_medio(Medio,AnioConocido,AnioConsulta).
+
+% Punto 4)
+
+ciertoAnioHazania(AnioConsulta, Pueblo, Hazania):-
+    habitante(Persona,Pueblo,_,_),
+    recuerda(Persona, Hazania, AnioConsulta).
+
+ciertoAnioPaginas(AnioConsulta, CantidadFinal, Pueblo):-
+    habitante(_,Pueblo,_,_),
+    findall(Paginas,(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,_,leyo_libro(Paginas),AnioConsulta)), PaginasEnTotal),
+    sum_list(PaginasEnTotal, CantidadFinal).
+
+ciertoAnioPuebloLector(Pueblo, AnioConsulta):-
+    findall(PaginasTotal,ciertoAnioPaginas(AnioConsulta,PaginasTotal,Pueblo), PaginasXPueblo),
+    max_member(Maximo,PaginasXPueblo),
+    Maximo>0,
+    ciertoAnioPaginas(AnioConsulta,Maximo,Pueblo).
+
+ciertoAnioMusical(Pueblo,AnioConsulta):-
+    habitante(_,Pueblo,_,_),
+    findall(HazaniaConMusica,(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,HazaniaConMusica,escucho_cancion,AnioConsulta)),HazaniasMusicales),
+    todasLasHazanias(Pueblo,AnioConsulta,Hazanias),
+    list_to_set(HazaniasMusicales,SinRepeHazaniasMusicales),
+    length(Hazanias, CantHazanias),
+    length(SinRepeHazaniasMusicales, CantHazaniasMusicales),
+    CantHazaniasMusicales>CantHazanias/2.
+
+ciertoAnioChismosos(Pueblo,AnioConsulta):-
+    habitante(_,Pueblo,_,_),
+    todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe),
+    forall(member(Hazania,HazaniasSinRepe),not(corroborada(Hazania))).
+
+ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
+    habitante(_,Pueblo,_,_),
+    version_hazania(Hazania,_,_),
+    forall(habitante(Persona,Pueblo,_,_),recuerda(Persona, Hazania, AnioConsulta)).
+
+ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
+    todasLasHazanias(Pueblo,AnioConsulta,Hazanias),
+    findall(HazaniaImportante,(member(HazaniaImportante,Hazanias),ciertoAnioImportante(Pueblo,HazaniaImportante,AnioConsulta)),HazaniasImportantes),
+    list_to_set(HazaniasImportantes,SinRepeHazaniasImportantes),
+    forall(member(HazaniaImportante1,SinRepeHazaniasImportantes),(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,HazaniaImportante1,presencio,AnioConsulta))).
 
 
 
