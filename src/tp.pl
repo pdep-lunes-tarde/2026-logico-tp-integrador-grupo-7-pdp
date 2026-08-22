@@ -186,6 +186,8 @@ esUnHeroe(Persona) :-
 %conoce_hazania(Persona, Hazania, AnioConocido, Medio)     
 insipiroAHeroe(Heroe,Inspirador) :-
     esUnHeroe(Heroe),
+    esUnHeroe(Inspirador),
+    Heroe \= Inspirador, % Nadie se inspira a si mismo
     conoce_hazania(Heroe,Hazania,_,_),
     participaEnHazania(Inspirador,Hazania).
 
@@ -316,6 +318,30 @@ test("Un pueblo vive tiempos sin precedentes si todas sus hazanias importantes f
 
 test("Un pueblo no vive tiempos sin precedentes si tiene hazanias importantes que nadie presencio"):-
     not(ciertoAnioSinPrecedentes(weise, 1400)).
+
+
+% Tests PUNTO 5
+
+test("Alguien es considerado heroe si participo en al menos una hazania conocida", nondet):-
+    esUnHeroe(frieren).
+
+test("Alguien no es heroe si no participo en ninguna hazania conocida"):-
+    not(esUnHeroe(wirbel)).
+
+test("Un heroe inspira a otro si este ultimo conoce una hazania en la que el primero participo", nondet):-
+    insipiroAHeroe(fern, frieren).
+
+test("Nadie inspira a un personaje si este no conoce ninguna hazania"):-
+    not(insipiroAHeroe(eisen, _)).
+
+test("Una cadena de inspiracion es valida si cada heroe inspiro al siguiente en orden", nondet):-
+    cadenaDeInspiracion(himmel, [himmel, fern, frieren, denken]).
+
+test("Una cadena de inspiracion es invalida si algun heroe no inspiro al siguiente"):-
+    not(cadenaDeInspiracion(denken, [denken, frieren])).
+
+test("Una cadena de inspiracion es invalida si repite un heroe"):-
+    not(cadenaDeInspiracion(frieren, [frieren, fern, frieren])).
 
 
 
