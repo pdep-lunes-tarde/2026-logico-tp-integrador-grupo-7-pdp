@@ -160,7 +160,8 @@ ciertoAnioChismosos(Pueblo,AnioConsulta):-
 ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
     habitante(_,Pueblo,_,_),
     version_hazania(Hazania,_,_),
-    forall(habitante(Persona,Pueblo,_,_),recuerda(Persona, Hazania, AnioConsulta)).
+    forall((habitante(Persona,Pueblo,_,_), esta_vivo_en(Persona, AnioConsulta)), 
+           recuerda(Persona, Hazania, AnioConsulta)).
 
 ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
     todasLasHazanias(Pueblo,AnioConsulta,Hazanias),
