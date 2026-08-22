@@ -121,8 +121,8 @@ todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe):-
     list_to_set(Hazanias,HazaniasSinRepe).
 
 recuerdaHazaniaXmedio(Persona,Hazania,Medio,AnioConsulta):-
-    conoceHazania(Persona,Hazania,AnioConocido,Medio),
-    estaVivoEn(Persona,AnioConsulta),
+    conoce_hazania(Persona,Hazania,AnioConocido,Medio),
+    esta_vivo_en(Persona,AnioConsulta),
     AnioConsulta>=AnioConocido,
     recuerda_segun_medio(Medio,AnioConocido,AnioConsulta).
 
@@ -169,6 +169,41 @@ ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
     forall(member(HazaniaImportante1,SinRepeHazaniasImportantes),(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,HazaniaImportante1,presencio,AnioConsulta))).
 
 
+% Punto 5)
+%version_hazania(Hazania, Heroes, Lugar)
+
+participaEnHazania(Persona,Hazania) :- 
+    version_hazania(Hazania, Heroes, _),
+    member(Persona,Heroes).
+
+%Queda a ver si agregar el año o no, esperar respuesta de Neme, debería solo modificar esUnHeroe y el resto de lógica seguir igual.
+esUnHeroe(Persona) :-
+    conoce_hazania(_,Hazania,_,_),
+    participaEnHazania(Persona,Hazania).
+
+
+%conoce_hazania(Persona, Hazania, AnioConocido, Medio)     
+insipiroAHeroe(Heroe,Inspirador) :-
+    esUnHeroe(Heroe),
+    conoce_hazania(Heroe,Hazania,_,_),
+    participaEnHazania(Inspirador,Hazania).
+
+inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
+    findall(Inspirado,insipiroAHeroe(Inspirado,Heroe),Inspirados),
+    list_to_set(Inspirados,InspiradosSinRepe).
+
+
+%Gente este punto lo termino mañana, digo para que no lo hagan al pedo.
+%cadenaDeInspiracion(Heroe,CadenaInspirada) :-
+    %inspiradosPorHeroe(Heroe,Inspirados),
+    %member(Inspirado,Inspirados),
+    %not(member(Inspirado,))
+
+
+%Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
+%Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
+
+%Quedan pendientes los test también, pero cuando termino el c los dejo.
 
 
 :- begin_tests(tpIntegrador, []).
