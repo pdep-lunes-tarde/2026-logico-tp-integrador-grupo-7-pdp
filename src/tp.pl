@@ -202,7 +202,7 @@ hacedorDeCadena(_,_,[]).
 hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
     inspiradosPorHeroe(Actual,Inspirados),
     member(Siguiente,Inspirados),
-    not(member(Inspirado,Recorridos)),
+    not(member(Siguiente,Recorridos)),
     hacedorDeCadena(Siguiente,[Siguiente|Recorridos],Resto).
 
 %Gente este punto lo termino mañana, digo para que no lo hagan al pedo.
