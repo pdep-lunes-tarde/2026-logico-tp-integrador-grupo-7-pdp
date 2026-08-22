@@ -192,12 +192,20 @@ inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
     findall(Inspirado,insipiroAHeroe(Inspirado,Heroe),Inspirados),
     list_to_set(Inspirados,InspiradosSinRepe).
 
+cadenaDeInspiracion(Heroe,[Heroe|Cadena]) :-
+    esUnHeroe(Heroe),
+    hacedorDeCadena(Heroe,[Heroe],Cadena).
+
+hacedorDeCadena(_,_,[]).
+
+hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
+    inspiradosPorHeroe(Actual,Inspirados),
+    member(Siguiente,Inspirados),
+    not(member(Inspirado,Recorridos)),
+    hacedorDeCadena(Siguiente,[Siguiente|Recorridos],Resto).
 
 %Gente este punto lo termino mañana, digo para que no lo hagan al pedo.
-%cadenaDeInspiracion(Heroe,CadenaInspirada) :-
-    %inspiradosPorHeroe(Heroe,Inspirados),
-    %member(Inspirado,Inspirados),
-    %not(member(Inspirado,))
+
 
 
 %Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
