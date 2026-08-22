@@ -217,6 +217,28 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
 %Quedan pendientes los test también, pero cuando termino el c los dejo.
 
 
+% Punto 6) Dream Team
+
+subconjuntos([], _).
+subconjuntos([X|Xs], [X|Ys]) :- subconjuntos(Xs, Ys).
+subconjuntos(Xs, [_|Ys]) :- subconjuntos(Xs, Ys).
+
+dreamTeam(Equipo, Heroe) :-
+    esUnHeroe(Heroe),
+    cadenaDeInspiracion(_, Cadena),
+    append(Antecesores, [Heroe|_], Cadena),
+    subconjuntos(SubAntecesores, Antecesores),
+    SubAntecesores \= [],
+    mismosElementos([Heroe|SubAntecesores], Equipo).
+
+%  mismos elementos, no importar el orden
+mismosElementos(Lista1, Lista2) :-
+    length(Lista1, N),
+    length(Lista2, N),
+    forall(member(X, Lista1), member(X, Lista2)).
+
+
+
 :- begin_tests(tpIntegrador, []).
 
 % Tests PUNTO 1
@@ -343,6 +365,24 @@ test("Una cadena de inspiracion es invalida si algun heroe no inspiro al siguien
 test("Una cadena de inspiracion es invalida si repite un heroe"):-
     not(cadenaDeInspiracion(frieren, [frieren, fern, frieren])).
 
+% Tests PUNTO 6
 
+test("Un equipo es un dream team valido si incluye al heroe y a alguien que estaba en la cadena antes que el", nondet):-
+    dreamTeam([fern, himmel], fern).
+
+test("Un dream team es valido sin importar el orden en el que se listen sus integrantes", nondet):-
+    dreamTeam([himmel, fern], fern).
+
+test("Un equipo no es un dream team valido si solo incluye al heroe y a nadie que estuviera antes en la cadena"):-
+    not(dreamTeam([fern], fern)).
+
+test("Un equipo no es un dream team valido si no incluye al heroe para el que se arma"):-
+    not(dreamTeam([frieren], fern)).
+
+test("Un equipo no es un dream team valido si incluye a alguien que nunca estuvo antes que el heroe en ninguna cadena"):-
+    not(dreamTeam([fern, frieren, denken], fern)).
+
+test("El mismo grupo de heroes puede ser un dream team valido para un heroe distinto", nondet):-
+    dreamTeam([fern, frieren, denken], denken).
 
 :- end_tests(tpIntegrador).
