@@ -210,22 +210,22 @@ inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
 :- begin_tests(tpIntegrador, []).
 
 % Tests PUNTO 1
-test(" un Humano esta vivo si el anio consultado es mayor o igual a su nacimiento y menor a su esperanza de vida"):-
+test("Una persona esta viva si el anio consultado esta dentro del rango de su esperanza de vida"):-
     esta_vivo_en(kanne, 1370).
 
 test("Una persona no esta viva en un anio anterior a su nacimiento"):-
     not(esta_vivo_en(kanne, 1300)).
 
-test("Un humano fallece al superar su esperanza de vida maxima"):-
+test("Una persona no esta viva si el anio consultado supera su esperanza de vida maxima"):-
     not(esta_vivo_en(kanne, 2000)).
 
-test("Un enano esta vivo si el anio consultado no supera sus 350 anios de esperanza de vida"):-
+test("Una persona sigue viva en el anio exacto en el que alcanza su limite de esperanza de vida"):-
     esta_vivo_en(voll, 1550).
 
-test("Un enano no esta vivo si su edad supera los 350 anios"):-
+test("Una persona ya no esta viva un anio despues de alcanzar el limite de su esperanza de vida"):-
     not(esta_vivo_en(voll, 1551)).
 
-test("un Elfo siempre esta vivo luego de su nacimiento ya que es inmortal", nondet):-
+test("Una persona sin limite de esperanza de vida definido nunca muere de vejez", nondet):-
     esta_vivo_en(serie, 5000).
 
 % Tests PUNTO 2
@@ -267,9 +267,48 @@ test("se recuerda una hazania si hay una estatua en buen estado en el pueblo don
     (recuerda(lawine, destruir_rey_demonio, 1400)).
 
 test("no se recuerda una hazania si la estatua que lo conmemora esta en mal estado"):-
-    (\+ recuerda(lawine, destruir_rey_demonio, 1390)).
+    not(recuerda(lawine, destruir_rey_demonio, 1390)).
 
 test("se recuerda una hazania si hay un festival conmemorandolo que ya comenzo", nondet):-
     (recuerda(fern, destruir_rey_demonio, 1400)).
+
+% Tests PUNTO 4
+test("Un pueblo recuerda una hazania si al menos uno de sus habitantes la recuerda en ese anio", nondet):-
+    ciertoAnioHazania(1400, weise, destruir_rey_demonio).
+
+test("Un pueblo no recuerda una hazania si ninguno de sus habitantes la recuerda en ese anio"):-
+    not(ciertoAnioHazania(1395, klares, destruir_rey_demonio)).
+
+test("La cantidad de paginas leidas en un pueblo es la suma de los libros leidos por sus habitantes en ese anio", nondet):-
+    ciertoAnioPaginas(1335, 100, weise).
+
+test("Un pueblo es el mas lector si la suma de paginas leidas supera a la de cualquier otro pueblo", nondet):-
+    ciertoAnioPuebloLector(ende, 1400).
+
+test("Un pueblo es musical si mas de la mitad de las hazanias que recuerda provienen de canciones", nondet):-
+    ciertoAnioMusical(auberst, 1395).
+
+test("Un pueblo no es musical si las hazanias recordadas por canciones no superan la mitad del total"):-
+    not(ciertoAnioMusical(weise, 1400)).
+
+test("Un pueblo es chismoso si ninguna de las hazanias que recuerda esta corroborada", nondet):-
+    ciertoAnioChismosos(ende, 1420).
+
+test("Un pueblo no es chismoso si al menos una de las hazanias que recuerda esta corroborada"):-
+    not(ciertoAnioChismosos(weise, 1400)).
+
+test("Una hazania es importante para un pueblo si todos sus habitantes vivos en ese anio la recuerdan", nondet):-
+    ciertoAnioImportante(weise, destruir_rey_demonio, 1400).
+    
+test("Una hazania no es importante para un pueblo si algun habitante vivo no la recuerda"):-
+    not(ciertoAnioImportante(weise, recuperar_gato_perdido, 1400)).
+
+test("Un pueblo vive tiempos sin precedentes si todas sus hazanias importantes fueron presenciadas por alguien de alli", nondet):-
+    ciertoAnioSinPrecedentes(klares, 1395).
+
+test("Un pueblo no vive tiempos sin precedentes si tiene hazanias importantes que nadie presencio"):-
+    not(ciertoAnioSinPrecedentes(weise, 1400)).
+
+
 
 :- end_tests(tpIntegrador).
