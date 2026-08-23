@@ -205,8 +205,6 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
     not(member(Siguiente,Recorridos)),
     hacedorDeCadena(Siguiente,[Siguiente|Recorridos],Resto).
 
-%Gente este punto lo termino mañana, digo para que no lo hagan al pedo.
-
 
 
 %Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
