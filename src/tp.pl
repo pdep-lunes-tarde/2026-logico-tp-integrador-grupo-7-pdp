@@ -211,16 +211,15 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
 %Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
 
 % Punto 6) Dream Team
-
-subconjuntos([], _).
-subconjuntos([X|Xs], [X|Ys]) :- subconjuntos(Xs, Ys).
-subconjuntos(Xs, [_|Ys]) :- subconjuntos(Xs, Ys).
+subconjunto([], _).
+subconjunto([X|Xs], [X|Ys]) :- subconjunto(Xs, Ys).
+subconjunto(Xs, [_|Ys]) :- subconjunto(Xs, Ys).
 
 dreamTeam(Equipo, Heroe) :-
     esUnHeroe(Heroe),
     cadenaDeInspiracion(_, Cadena),
     append(Antecesores, [Heroe|_], Cadena),
-    subconjuntos(SubAntecesores, Antecesores),
+    subconjunto(SubAntecesores, Antecesores),
     SubAntecesores \= [],
     mismosElementos([Heroe|SubAntecesores], Equipo).
 
@@ -336,7 +335,6 @@ test("Un pueblo no vive tiempos sin precedentes si tiene hazanias importantes qu
 
 
 % Tests PUNTO 5
-
 test("Alguien es considerado heroe si participo en al menos una hazania conocida", nondet):-
     esUnHeroe(frieren).
 
@@ -359,7 +357,6 @@ test("Una cadena de inspiracion es invalida si repite un heroe"):-
     not(cadenaDeInspiracion(frieren, [frieren, fern, frieren])).
 
 % Tests PUNTO 6
-
 test("Un equipo es un dream team valido si incluye al heroe y a alguien que estaba en la cadena antes que el", nondet):-
     dreamTeam([fern, himmel], fern).
 
