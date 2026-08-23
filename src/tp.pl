@@ -186,6 +186,8 @@ esUnHeroe(Persona) :-
 %conoce_hazania(Persona, Hazania, AnioConocido, Medio)     
 insipiroAHeroe(Heroe,Inspirador) :-
     esUnHeroe(Heroe),
+    esUnHeroe(Inspirador),
+    Heroe \= Inspirador, % Nadie se inspira a si mismo
     conoce_hazania(Heroe,Hazania,_,_),
     participaEnHazania(Inspirador,Hazania).
 
@@ -211,6 +213,28 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
 %Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
 
 %Quedan pendientes los test también, pero cuando termino el c los dejo.
+
+
+% Punto 6) Dream Team
+
+subconjuntos([], _).
+subconjuntos([X|Xs], [X|Ys]) :- subconjuntos(Xs, Ys).
+subconjuntos(Xs, [_|Ys]) :- subconjuntos(Xs, Ys).
+
+dreamTeam(Equipo, Heroe) :-
+    esUnHeroe(Heroe),
+    cadenaDeInspiracion(_, Cadena),
+    append(Antecesores, [Heroe|_], Cadena),
+    subconjuntos(SubAntecesores, Antecesores),
+    SubAntecesores \= [],
+    mismosElementos([Heroe|SubAntecesores], Equipo).
+
+%  mismos elementos, no importar el orden
+mismosElementos(Lista1, Lista2) :-
+    length(Lista1, N),
+    length(Lista2, N),
+    forall(member(X, Lista1), member(X, Lista2)).
+
 
 
 :- begin_tests(tpIntegrador, []).
@@ -316,5 +340,47 @@ test("Un pueblo no vive tiempos sin precedentes si tiene hazanias importantes qu
     not(ciertoAnioSinPrecedentes(weise, 1400)).
 
 
+% Tests PUNTO 5
+
+test("Alguien es considerado heroe si participo en al menos una hazania conocida", nondet):-
+    esUnHeroe(frieren).
+
+test("Alguien no es heroe si no participo en ninguna hazania conocida"):-
+    not(esUnHeroe(wirbel)).
+
+test("Un heroe inspira a otro si este ultimo conoce una hazania en la que el primero participo", nondet):-
+    insipiroAHeroe(fern, frieren).
+
+test("Nadie inspira a un personaje si este no conoce ninguna hazania"):-
+    not(insipiroAHeroe(eisen, _)).
+
+test("Una cadena de inspiracion es valida si cada heroe inspiro al siguiente en orden", nondet):-
+    cadenaDeInspiracion(himmel, [himmel, fern, frieren, denken]).
+
+test("Una cadena de inspiracion es invalida si algun heroe no inspiro al siguiente"):-
+    not(cadenaDeInspiracion(denken, [denken, frieren])).
+
+test("Una cadena de inspiracion es invalida si repite un heroe"):-
+    not(cadenaDeInspiracion(frieren, [frieren, fern, frieren])).
+
+% Tests PUNTO 6
+
+test("Un equipo es un dream team valido si incluye al heroe y a alguien que estaba en la cadena antes que el", nondet):-
+    dreamTeam([fern, himmel], fern).
+
+test("Un dream team es valido sin importar el orden en el que se listen sus integrantes", nondet):-
+    dreamTeam([himmel, fern], fern).
+
+test("Un equipo no es un dream team valido si solo incluye al heroe y a nadie que estuviera antes en la cadena"):-
+    not(dreamTeam([fern], fern)).
+
+test("Un equipo no es un dream team valido si no incluye al heroe para el que se arma"):-
+    not(dreamTeam([frieren], fern)).
+
+test("Un equipo no es un dream team valido si incluye a alguien que nunca estuvo antes que el heroe en ninguna cadena"):-
+    not(dreamTeam([fern, frieren, denken], fern)).
+
+test("El mismo grupo de heroes puede ser un dream team valido para un heroe distinto", nondet):-
+    dreamTeam([fern, frieren, denken], denken).
 
 :- end_tests(tpIntegrador).
