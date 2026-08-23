@@ -179,14 +179,12 @@ participaEnHazania(Persona,Hazania) :-
 
 %Queda a ver si agregar el año o no, esperar respuesta de Neme, debería solo modificar esUnHeroe y el resto de lógica seguir igual.
 esUnHeroe(Persona) :-
-    conoce_hazania(_,Hazania,_,_),
-    participaEnHazania(Persona,Hazania).
-
+    participaEnHazania(Persona,Hazania),
+    once(conoce_hazania(_,Hazania,_,_)).
 
 %conoce_hazania(Persona, Hazania, AnioConocido, Medio)     
 insipiroAHeroe(Heroe,Inspirador) :-
     esUnHeroe(Heroe),
-    esUnHeroe(Inspirador),
     Heroe \= Inspirador, % Nadie se inspira a si mismo
     conoce_hazania(Heroe,Hazania,_,_),
     participaEnHazania(Inspirador,Hazania).
@@ -195,9 +193,9 @@ inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
     findall(Inspirado,insipiroAHeroe(Inspirado,Heroe),Inspirados),
     list_to_set(Inspirados,InspiradosSinRepe).
 
-cadenaDeInspiracion(Heroe,[Heroe|Cadena]) :-
+cadenaDeInspiracion(Heroe,[Heroe,Siguiente|Resto]) :-
     esUnHeroe(Heroe),
-    hacedorDeCadena(Heroe,[Heroe],Cadena).
+    hacedorDeCadena(Heroe,[Heroe],[Siguiente|Resto]).
 
 hacedorDeCadena(_,_,[]).
 
@@ -211,9 +209,6 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
 
 %Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
 %Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
-
-%Quedan pendientes los test también, pero cuando termino el c los dejo.
-
 
 % Punto 6) Dream Team
 
