@@ -88,10 +88,7 @@ conoce_hazania(Persona, Hazania, AnioConocido, Medio) :-
 
 
 recuerda(Persona, Hazania, AnioConsulta) :-
-    esta_vivo_en(Persona, AnioConsulta),
-    conoce_hazania(Persona, Hazania, AnioConocido, Medio),
-    AnioConsulta >= AnioConocido,
-    recuerda_segun_medio(Medio, AnioConocido, AnioConsulta).
+    recuerdaHazaniaXmedio(Persona,Hazania,_,AnioConsulta).
 
 paso_al_olvido(Hazania, AnioConsulta) :-
     version_hazania(Hazania, _, _),
@@ -117,7 +114,7 @@ multiples_versiones(Hazania) :-
 % Parte 2
 
 todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe):-
-    findall(Hazania,(habitante(Persona,Pueblo,_,_),recuerda(Persona, Hazania, AnioConsulta)),Hazanias),
+    findall(Hazania, ciertoAnioHazania(AnioConsulta, Pueblo, Hazania), Hazanias),
     list_to_set(Hazanias,HazaniasSinRepe).
 
 recuerdaHazaniaXmedio(Persona,Hazania,Medio,AnioConsulta):-
@@ -142,6 +139,7 @@ ciertoAnioPuebloLector(Pueblo, AnioConsulta):-
     max_member(Maximo,PaginasXPueblo),
     Maximo>0,
     ciertoAnioPaginas(AnioConsulta,Maximo,Pueblo).
+%Queda pendiente ciertoAnioPuebloLector hacerlo con forall o not.
 
 ciertoAnioMusical(Pueblo,AnioConsulta):-
     habitante(_,Pueblo,_,_),
@@ -156,6 +154,7 @@ ciertoAnioChismosos(Pueblo,AnioConsulta):-
     habitante(_,Pueblo,_,_),
     todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe),
     forall(member(Hazania,HazaniasSinRepe),not(corroborada(Hazania))).
+%No hacerlo como lista y despues forall, hacerlo como un forall directo.
 
 ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
     habitante(_,Pueblo,_,_),
@@ -168,7 +167,7 @@ ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
     findall(HazaniaImportante,(member(HazaniaImportante,Hazanias),ciertoAnioImportante(Pueblo,HazaniaImportante,AnioConsulta)),HazaniasImportantes),
     list_to_set(HazaniasImportantes,SinRepeHazaniasImportantes),
     forall(member(HazaniaImportante1,SinRepeHazaniasImportantes),(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,HazaniaImportante1,presencio,AnioConsulta))).
-
+%No hacerlo como lista y despues forall, hacerlo como un forall directo.
 
 % Punto 5)
 %version_hazania(Hazania, Heroes, Lugar)
@@ -177,7 +176,6 @@ participaEnHazania(Persona,Hazania) :-
     version_hazania(Hazania, Heroes, _),
     member(Persona,Heroes).
 
-%Queda a ver si agregar el año o no, esperar respuesta de Neme, debería solo modificar esUnHeroe y el resto de lógica seguir igual.
 esUnHeroe(Persona) :-
     participaEnHazania(Persona,Hazania),
     once(conoce_hazania(_,Hazania,_,_)).
@@ -185,9 +183,9 @@ esUnHeroe(Persona) :-
 %conoce_hazania(Persona, Hazania, AnioConocido, Medio)     
 insipiroAHeroe(Heroe,Inspirador) :-
     esUnHeroe(Heroe),
-    Heroe \= Inspirador, % Nadie se inspira a si mismo
     conoce_hazania(Heroe,Hazania,_,_),
-    participaEnHazania(Inspirador,Hazania).
+    participaEnHazania(Inspirador,Hazania),
+    Heroe \= Inspirador.
 
 inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
     findall(Inspirado,insipiroAHeroe(Inspirado,Heroe),Inspirados),
@@ -205,10 +203,12 @@ hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
     not(member(Siguiente,Recorridos)),
     hacedorDeCadena(Siguiente,[Siguiente|Recorridos],Resto).
 
-
-
 %Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
 %Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
+
+%distinct/1 o /2, que devuelve solo 1 resultado para una consulta
+%Hacer un distinct de inspiradoPorHeroe en vez de hacer la lista de los inspirados y después un member de esa lista.
+
 
 % Punto 6) Dream Team
 subconjunto([], _).
@@ -218,7 +218,7 @@ subconjunto(Xs, [_|Ys]) :- subconjunto(Xs, Ys).
 dreamTeam(Equipo, Heroe) :-
     esUnHeroe(Heroe),
     cadenaDeInspiracion(_, Cadena),
-    append(Antecesores, [Heroe|_], Cadena),
+    append(Antecesores, [Heroe], Cadena),
     subconjunto(SubAntecesores, Antecesores),
     SubAntecesores \= [],
     mismosElementos([Heroe|SubAntecesores], Equipo).
@@ -229,9 +229,11 @@ mismosElementos(Lista1, Lista2) :-
     length(Lista2, N),
     forall(member(X, Lista1), member(X, Lista2)).
 
-
+%Hacer que sea inversible, haciendolo con hacer un predicado que genere lista2
 
 :- begin_tests(tpIntegrador, []).
+
+
 
 % Tests PUNTO 1
 test("Una persona esta viva si el anio consultado esta dentro del rango de su esperanza de vida"):-
