@@ -135,11 +135,10 @@ ciertoAnioPaginas(AnioConsulta, CantidadFinal, Pueblo):-
     sum_list(PaginasEnTotal, CantidadFinal).
 
 ciertoAnioPuebloLector(Pueblo, AnioConsulta):-
-    findall(PaginasTotal,ciertoAnioPaginas(AnioConsulta,PaginasTotal,Pueblo), PaginasXPueblo),
-    max_member(Maximo,PaginasXPueblo),
-    Maximo>0,
-    ciertoAnioPaginas(AnioConsulta,Maximo,Pueblo).
-%Queda pendiente ciertoAnioPuebloLector hacerlo con forall o not.
+    ciertoAnioPaginas(AnioConsulta, CantidadFinalMax, Pueblo),
+    forall(
+    (ciertoAnioPaginas(AnioConsulta, OtraCantidadFinal, OtroPueblo),OtroPueblo\=Pueblo),
+    CantidadFinalMax>OtraCantidadFinal).
 
 ciertoAnioMusical(Pueblo,AnioConsulta):-
     habitante(_,Pueblo,_,_),
@@ -152,9 +151,8 @@ ciertoAnioMusical(Pueblo,AnioConsulta):-
 
 ciertoAnioChismosos(Pueblo,AnioConsulta):-
     habitante(_,Pueblo,_,_),
-    todasLasHazanias(Pueblo,AnioConsulta,HazaniasSinRepe),
-    forall(member(Hazania,HazaniasSinRepe),not(corroborada(Hazania))).
-%No hacerlo como lista y despues forall, hacerlo como un forall directo.
+    forall((habitante(Persona,Pueblo,_,_),recuerda(Persona, Hazania, AnioConsulta)),
+    not(corroborada(Hazania))).
 
 ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
     habitante(_,Pueblo,_,_),
@@ -163,11 +161,9 @@ ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
            recuerda(Persona, Hazania, AnioConsulta)).
 
 ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
-    todasLasHazanias(Pueblo,AnioConsulta,Hazanias),
-    findall(HazaniaImportante,(member(HazaniaImportante,Hazanias),ciertoAnioImportante(Pueblo,HazaniaImportante,AnioConsulta)),HazaniasImportantes),
-    list_to_set(HazaniasImportantes,SinRepeHazaniasImportantes),
-    forall(member(HazaniaImportante1,SinRepeHazaniasImportantes),(habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,HazaniaImportante1,presencio,AnioConsulta))).
-%No hacerlo como lista y despues forall, hacerlo como un forall directo.
+   ciertoAnioImportante(Pueblo,_,AnioConsulta),
+   forall((habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,Hazania,presencio,AnioConsulta)),
+    ciertoAnioImportante(Pueblo,Hazania,AnioConsulta)).
 
 % Punto 5)
 %version_hazania(Hazania, Heroes, Lugar)
@@ -309,7 +305,7 @@ test("La cantidad de paginas leidas en un pueblo es la suma de los libros leidos
     ciertoAnioPaginas(1335, 100, weise).
 
 test("Un pueblo es el mas lector si la suma de paginas leidas supera a la de cualquier otro pueblo", nondet):-
-    ciertoAnioPuebloLector(ende, 1400).
+    ciertoAnioPuebloLector(weise, 1400).
 
 test("Un pueblo es musical si mas de la mitad de las hazanias que recuerda provienen de canciones", nondet):-
     ciertoAnioMusical(auberst, 1395).
