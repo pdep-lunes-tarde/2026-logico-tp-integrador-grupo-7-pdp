@@ -160,11 +160,12 @@ ciertoAnioImportante(Pueblo,Hazania,AnioConsulta):-
     forall((habitante(Persona,Pueblo,_,_), esta_vivo_en(Persona, AnioConsulta)), 
            recuerda(Persona, Hazania, AnioConsulta)).
 
-ciertoAnioSinPrecedentes(Pueblo,AnioConsulta):-
-   ciertoAnioImportante(Pueblo,_,AnioConsulta),
-   forall((habitante(Persona,Pueblo,_,_),recuerdaHazaniaXmedio(Persona,Hazania,presencio,AnioConsulta)),
-    ciertoAnioImportante(Pueblo,Hazania,AnioConsulta)).
-
+ciertoAnioSinPrecedentes(Pueblo, AnioConsulta) :-
+    ciertoAnioImportante(Pueblo, _, AnioConsulta),
+    forall(
+        ciertoAnioImportante(Pueblo, Hazania, AnioConsulta),
+        (habitante(Persona, Pueblo, _, _), recuerdaHazaniaXmedio(Persona, Hazania, presencio, AnioConsulta))
+    ).
 % Punto 5)
 %version_hazania(Hazania, Heroes, Lugar)
 
@@ -183,27 +184,20 @@ insipiroAHeroe(Heroe,Inspirador) :-
     participaEnHazania(Inspirador,Hazania),
     Heroe \= Inspirador.
 
-inspiradosPorHeroe(Heroe,InspiradosSinRepe) :-
-    findall(Inspirado,insipiroAHeroe(Inspirado,Heroe),Inspirados),
-    list_to_set(Inspirados,InspiradosSinRepe).
 
 cadenaDeInspiracion(Heroe,[Heroe,Siguiente|Resto]) :-
     esUnHeroe(Heroe),
     hacedorDeCadena(Heroe,[Heroe],[Siguiente|Resto]).
 
-hacedorDeCadena(_,_,[]).
+hacedorDeCadena(_, _, []).
 
-hacedorDeCadena(Actual,Recorridos,[Siguiente|Resto]) :-
-    inspiradosPorHeroe(Actual,Inspirados),
-    member(Siguiente,Inspirados),
-    not(member(Siguiente,Recorridos)),
-    hacedorDeCadena(Siguiente,[Siguiente|Recorridos],Resto).
+hacedorDeCadena(Actual, Recorridos, [Siguiente|Resto]) :-
+    % Usamos distinct directamente en vez de armar la lista y hacer member
+    distinct(Siguiente, insipiroAHeroe(Siguiente, Actual)),
+    
+    not(member(Siguiente, Recorridos)),
+    hacedorDeCadena(Siguiente, [Siguiente|Recorridos], Resto).
 
-%Tengo cadena de inspirados por el primer héroe, necesito descomponer la cadena de inspirados, y tomar eso como base para volver a consultar esto
-%Para la parte de no repetir Fern → Frieren y Frieren → Fern quizas usar un not member()
-
-%distinct/1 o /2, que devuelve solo 1 resultado para una consulta
-%Hacer un distinct de inspiradoPorHeroe en vez de hacer la lista de los inspirados y después un member de esa lista.
 
 
 % Punto 6) Dream Team
@@ -214,18 +208,39 @@ subconjunto(Xs, [_|Ys]) :- subconjunto(Xs, Ys).
 dreamTeam(Equipo, Heroe) :-
     esUnHeroe(Heroe),
     cadenaDeInspiracion(_, Cadena),
-    append(Antecesores, [Heroe], Cadena),
+    
+    append(Antecesores, [Heroe|_], Cadena),
+    
     subconjunto(SubAntecesores, Antecesores),
     SubAntecesores \= [],
-    mismosElementos([Heroe|SubAntecesores], Equipo).
+    
+    % Generamos el equipo combinando el héroe con los antecesores en cualquier orden
+    mismosElementos([Heroe | SubAntecesores], Equipo).
 
-%  mismos elementos, no importar el orden
-mismosElementos(Lista1, Lista2) :-
-    length(Lista1, N),
-    length(Lista2, N),
-    forall(member(X, Lista1), member(X, Lista2)).
 
-%Hacer que sea inversible, haciendolo con hacer un predicado que genere lista2
+% sacar(ElementoASacar, ListaOriginal, ListaQueSobra)
+% auxiliar para sacar un elemento de la lista
+
+% Caso 1: El elemento que quiero sacar es el primero de la lista
+% Me sobra la Cola
+sacar(Elemento, [Elemento | Cola], Cola).
+
+% Caso 2: El elemento no es el primero. Lo dejo pasar (me guardo la Cabeza) 
+% y lo mando a buscar y sacar en la Cola recursivamente.
+sacar(Elemento, [Cabeza | Cola], [Cabeza | RestoCola]) :-
+    sacar(Elemento, Cola, RestoCola).
+
+%mismos elementos
+
+% Caso base: Dos listas vacías tienen los mismos elementos.
+mismosElementos([], []).
+
+% Caso recursivo: 
+mismosElementos(Lista1, [Cabeza2 | Cola2]) :-
+    % Saco un elemento cualquiera de la Lista1 y lo pongo como Cabeza de la Lista2
+    sacar(Cabeza2, Lista1, RestoLista1),
+    % Repito el proceso con lo que sobró de la Lista1 y la Cola2
+    mismosElementos(RestoLista1, Cola2).
 
 :- begin_tests(tpIntegrador, []).
 
